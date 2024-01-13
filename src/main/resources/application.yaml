@@ -1,3 +1,12 @@
 bot:
   name: MonitorItemsBot
   token: 5682349016:AAEgJjp4BR9EAghVLZ7dE8TYQ2lZPa3vMWI
+
+
+
+
+
+
+answer:
+  command:
+    help: "I'm a bot that sends information about products. My commands: \n\n/start\n\n/settings"
