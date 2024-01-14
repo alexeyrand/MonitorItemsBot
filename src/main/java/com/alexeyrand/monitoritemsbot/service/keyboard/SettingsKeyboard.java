@@ -23,6 +23,9 @@ public class SettingsKeyboard {
         keyboardRows.add(row2);
         keyboardRows.add(row3);
         keyboardMarkup.setKeyboard(keyboardRows);
+        keyboardMarkup.setSelective(true);
+        keyboardMarkup.setResizeKeyboard(true);
+        keyboardMarkup.setOneTimeKeyboard(false);
         return keyboardMarkup;
     }
 }
