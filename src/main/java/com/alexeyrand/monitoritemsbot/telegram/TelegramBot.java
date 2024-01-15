@@ -41,10 +41,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Setter
     private String URL = new String();
 
-    String URL1 = new String();
-    String URL2 = new String();
-    String URL3 = new String();
-    String URL4 = new String();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -57,10 +53,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             log.error("Error setting bots command list: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
-        urlMap.put("url1", URL1);
-        urlMap.put("url2", URL2);
-        urlMap.put("url3", URL3);
-        urlMap.put("url4", URL4);
+        urlMap.put("url1", "");
+        urlMap.put("url2", "");
+        urlMap.put("url3", "");
+        urlMap.put("url4", "");
     }
 
     @Override
@@ -81,10 +77,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             String chatId = message.getChatId().toString();
             String textMessage = message.getText();
             urlMap.put(URL, textMessage);
-            //newurl = new StringBuilder(message.getText());
-            //urlMap.put(URL, newurl);
-            System.out.println(urlMap);
-            sendMessage(chatId, "Url изменен на " + urlMap.get(URL));
+            sendMessageWithKeyboard(chatId, "Url изменен на " + urlMap.get(URL), SettingsKeyboard.setKeyboard());
             waitMessage = false;
 
         } else if (update.hasMessage() && update.getMessage().hasText() && !waitMessage) {
@@ -157,8 +150,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void SetUrl1CommandReceived(String chatId) {
         String answer = "Введите url:";
-        String url = new String("url1");
-        sendMessageWait(chatId, answer, url);
+        String urlKey = "url1";
+        sendMessageWait(chatId, answer, urlKey);
         log.info("Setting button 'URL1'");
     }
 
