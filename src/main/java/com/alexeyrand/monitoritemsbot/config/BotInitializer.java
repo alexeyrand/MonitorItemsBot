@@ -1,12 +1,10 @@
 package com.alexeyrand.monitoritemsbot.config;
 
-import com.alexeyrand.monitoritemsbot.service.TelegramBot;
-import com.alexeyrand.monitoritemsbot.service.handler.EchoAction;
-import com.alexeyrand.monitoritemsbot.service.handler.InfoAction;
-import lombok.AllArgsConstructor;
+import com.alexeyrand.monitoritemsbot.telegram.TelegramBot;
+import com.alexeyrand.monitoritemsbot.telegram.handler.EchoAction;
+import com.alexeyrand.monitoritemsbot.telegram.handler.InfoAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,26 +19,15 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class BotInitializer {
-    @Autowired
-    BotConfig config;
-    TelegramBot bot;
+
+    final BotConfig config;
+
+    final TelegramBot bot;
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-        var actions = Map.of(
-                "/start", new InfoAction(
-                        List.of(
-                                "/start - Команды бота",
-                                "/URL1 - Ввод данных для команды",
-                                "/new - Регистрация пользователя")
-                ),
-                "URL1", new EchoAction("/echo"),
-                "URL2", new EchoAction("/echo"),
-                "URL3", new EchoAction("/echo"),
-                "URL4", new EchoAction("/echo"));
 
-        bot = new TelegramBot(config, actions);
         try {
             telegramBotsApi.registerBot(bot);
         }
