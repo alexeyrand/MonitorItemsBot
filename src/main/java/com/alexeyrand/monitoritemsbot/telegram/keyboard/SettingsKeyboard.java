@@ -13,7 +13,7 @@ public class SettingsKeyboard {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow row1 = new KeyboardRow();
         row1.add("url1");
-        row1.add("ulr2");
+        row1.add("url2");
         KeyboardRow row2 = new KeyboardRow();
         row2.add("url3");
         row2.add("url4");

@@ -5,7 +5,9 @@ import com.alexeyrand.monitoritemsbot.api.client.RequestSender;
 import com.alexeyrand.monitoritemsbot.config.BotConfig;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.HomeKeyboard;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.SettingsKeyboard;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,22 +35,16 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     RequestSender requestSender;
     boolean waitMessage = false;
-    Map<String, StringBuilder> urlMap = new ConcurrentHashMap<>();
+    Map<String, String> urlMap = new ConcurrentHashMap<>();
 
-    private String URL = "";
+    @Getter
+    @Setter
+    private String URL = new String();
 
-    public String getURL() {
-        return URL;
-    }
-
-    public void setURL(String URL) {
-        this.URL = URL;
-    }
-
-    StringBuilder URL1 = new StringBuilder();
-    StringBuilder URL2 = new StringBuilder();
-    StringBuilder URL3 = new StringBuilder();
-    StringBuilder URL4 = new StringBuilder();
+    String URL1 = new String();
+    String URL2 = new String();
+    String URL3 = new String();
+    String URL4 = new String();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -82,12 +79,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             Message message = update.getMessage();
             String chatId = message.getChatId().toString();
-
-            var newurl = urlMap.get(URL);
-            newurl = new StringBuilder(message.getText());
-            urlMap.put(URL, newurl);
-            URL = message.getText();
-            sendMessage(chatId, "Url изменён");
+            String textMessage = message.getText();
+            urlMap.put(URL, textMessage);
+            //newurl = new StringBuilder(message.getText());
+            //urlMap.put(URL, newurl);
+            System.out.println(urlMap);
+            sendMessage(chatId, "Url изменен на " + urlMap.get(URL));
             waitMessage = false;
 
         } else if (update.hasMessage() && update.getMessage().hasText() && !waitMessage) {
@@ -96,8 +93,9 @@ public class TelegramBot extends TelegramLongPollingBot {
             String messageText = message.getText();
 
             switch (messageText) {
-                case "/start" -> StartCommandReceived(chatId);
                 case "/help" -> HelpCommandReceived(chatId);
+                case "/start" -> StartCommandReceived(chatId);
+                case "/stop" -> StopCommandReceived(chatId);
                 case "/settings" -> SettingsCommandReceived(chatId);
                 case "/status" -> StatusCommandReceived(chatId);
                 case "<---   back" -> HomeCommandReceived(chatId);
@@ -117,20 +115,26 @@ public class TelegramBot extends TelegramLongPollingBot {
         log.info("Setting button 'help'");
     }
 
+    public void SettingsCommandReceived(String chatId) {
+        String answer = "Для каждого url установите соответствующий адрес";
+        ReplyKeyboardMarkup keyboard = SettingsKeyboard.setKeyboard();
+        sendMessageWithKeyboard(chatId, answer, keyboard);
+        log.info("Setting button 'settings'");
+    }
+
     public void StartCommandReceived(String chatId) {
-        System.out.println("tut");
-        requestSender.getRequest("http://localhost:9090/start");
-        System.out.println();
+
+        requestSender.getRequest(URI.create("http://localhost:9090/start"));
         String answer = "Монитор запущен";
         sendMessage(chatId, answer);
         log.info("Monitor is running");
     }
 
-        public void SettingsCommandReceived(String chatId) {
-        String answer = "Для каждого url установите соответствующий адрес";
-        ReplyKeyboardMarkup keyboard = SettingsKeyboard.setKeyboard();
-        sendMessageWithKeyboard(chatId, answer, keyboard);
-        log.info("Setting button 'settings'");
+    public void StopCommandReceived(String chatId) {
+        //requestSender.getRequest("http://localhost:9090/stop");
+        String answer = "Монитор остановлен";
+        sendMessage(chatId, answer);
+        log.info("Monitor is stopped");
     }
 
     public void HomeCommandReceived(String chatId) {
@@ -140,7 +144,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         log.info("Setting button 'home'");
     }
     public void  StatusCommandReceived(String chatId) {
-        String answer = "Текущие url:\n";
+        String answer = "Текущие url:\n"
+                + urlMap.get("url1") + "\n"
+                + urlMap.get("url2") + "\n"
+                + urlMap.get("url3") + "\n"
+                + urlMap.get("url4");
         ReplyKeyboardMarkup keyboard = SettingsKeyboard.setKeyboard();
         sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'status'");
@@ -149,34 +157,35 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void SetUrl1CommandReceived(String chatId) {
         String answer = "Введите url:";
-        StringBuilder url = new StringBuilder("url1");
+        String url = new String("url1");
         sendMessageWait(chatId, answer, url);
         log.info("Setting button 'URL1'");
     }
 
     public void SetUrl2CommandReceived(String chatId) {
         String answer = "Введите url:";
-        StringBuilder url = new StringBuilder("url2");
+        String url = new String("url2");
         sendMessageWait(chatId, answer, url);
         log.info("Setting button 'URL2'");
     }
 
     public void SetUrl3CommandReceived(String chatId) {
         String answer = "Введите url:";
-        StringBuilder url = new StringBuilder("url3");
+        String url = new String("url3");
         sendMessageWait(chatId, answer, url);
         log.info("Setting button 'URL3'");
     }
 
     public void SetUrl4CommandReceived(String chatId) {
         String answer = "Введите url:";
-        StringBuilder url = new StringBuilder("url4");
+        String url = new String("url4");
         sendMessageWait(chatId, answer, url);
         log.info("Setting button 'URL4'");
     }
 
-    public void sendMessageWait(String chatId, String textToSend, StringBuilder url) {
+    public void sendMessageWait(String chatId, String textToSend, String url) {
         setURL("" + url);
+        System.out.println(getURL());
         sendMessage(chatId, textToSend);
         waitMessage = true;
     }

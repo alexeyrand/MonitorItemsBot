@@ -21,6 +21,9 @@ public class HomeKeyboard {
         keyboardRows.add(row1);
         keyboardRows.add(row2);
         keyboardMarkup.setKeyboard(keyboardRows);
+        keyboardMarkup.setSelective(true);
+        keyboardMarkup.setResizeKeyboard(true);
+        keyboardMarkup.setOneTimeKeyboard(false);
         return keyboardMarkup;
     }
 }
