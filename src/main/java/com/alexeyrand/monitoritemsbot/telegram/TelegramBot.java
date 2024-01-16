@@ -2,16 +2,17 @@ package com.alexeyrand.monitoritemsbot.telegram;
 
 
 import com.alexeyrand.monitoritemsbot.api.client.RequestSender;
+import com.alexeyrand.monitoritemsbot.api.dto.UrlDto;
+import com.alexeyrand.monitoritemsbot.api.factories.UrlDtoFactory;
 import com.alexeyrand.monitoritemsbot.config.BotConfig;
+import com.alexeyrand.monitoritemsbot.telegram.handler.MessageHandler;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.HomeKeyboard;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.SettingsKeyboard;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -32,8 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig config;
+
     @Autowired
-    RequestSender requestSender;
+    private RequestSender requestSender;
+    @Autowired
+    private MessageHandler messageHandler;
+    @Autowired
+    private UrlDtoFactory urlDtoFactory;
     boolean waitMessage = false;
     Map<String, String> urlMap = new ConcurrentHashMap<>();
 
@@ -71,32 +77,36 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText() && waitMessage) {
-
+        if (update.hasMessage() && update.getMessage().hasText()) {
             Message message = update.getMessage();
             String chatId = message.getChatId().toString();
-            String textMessage = message.getText();
-            urlMap.put(URL, textMessage);
-            sendMessageWithKeyboard(chatId, "Url изменен на " + urlMap.get(URL), SettingsKeyboard.setKeyboard());
-            waitMessage = false;
-
-        } else if (update.hasMessage() && update.getMessage().hasText() && !waitMessage) {
-            String chatId = update.getMessage().getChatId().toString();
-            Message message = update.getMessage();
             String messageText = message.getText();
 
-            switch (messageText) {
-                case "/help" -> HelpCommandReceived(chatId);
-                case "/start" -> StartCommandReceived(chatId);
-                case "/stop" -> StopCommandReceived(chatId);
-                case "/settings" -> SettingsCommandReceived(chatId);
-                case "/status" -> StatusCommandReceived(chatId);
-                case "<---   back" -> HomeCommandReceived(chatId);
-                case "url1" -> SetUrl1CommandReceived(chatId);
-                case "url2" -> SetUrl2CommandReceived(chatId);
-                case "url3" -> SetUrl3CommandReceived(chatId);
-                case "url4" -> SetUrl4CommandReceived(chatId);
-                default -> sendMessage(chatId, "method not allowed");
+            if (waitMessage) {
+                String[] parseUrl = messageHandler.urlParse(messageText);
+                urlMap.put(URL, parseUrl[1]);
+                UrlDto urlDto = urlDtoFactory.makeUrlDto(parseUrl[0], parseUrl[1]);
+
+                sendMessageWithKeyboard(chatId, "Url изменен на " + urlMap.get(URL), SettingsKeyboard.setKeyboard());
+                waitMessage = false;
+
+            } else {
+
+                switch (messageText) {
+                    case "/help" -> HelpCommandReceived(chatId);
+                    case "/start" -> StartCommandReceived(chatId);
+                    case "/stop" -> StopCommandReceived(chatId);
+                    case "/settings" -> SettingsCommandReceived(chatId);
+                    case "/status" -> StatusCommandReceived(chatId);
+                    case "<---   back" -> HomeCommandReceived(chatId);
+                    case "url1" -> SetUrl1CommandReceived(chatId);
+                    case "url2" -> SetUrl2CommandReceived(chatId);
+                    case "url3" -> SetUrl3CommandReceived(chatId);
+                    case "url4" -> SetUrl4CommandReceived(chatId);
+                    default -> sendMessage(chatId, "method not allowed");
+                }
+
+
             }
         }
     }
