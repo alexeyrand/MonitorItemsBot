@@ -134,7 +134,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void StopCommandReceived(String chatId) {
-        //requestSender.getRequest("http://localhost:9090/stop");
+        requestSender.getRequest(URI.create("http://localhost:9090/stop"));
         String answer = "Монитор остановлен";
         sendMessage(chatId, answer);
         log.info("Monitor is stopped");
