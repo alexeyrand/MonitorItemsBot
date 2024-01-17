@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
 public class RequestSender {
 
 
-    public void getRequest(URI url) {
+    public void getRequest(URI url, String chatId) {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(20))
@@ -25,7 +25,7 @@ public class RequestSender {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .timeout(Duration.ofMinutes(2))
-                .GET()
+                .POST(HttpRequest.BodyPublishers.ofString(chatId))
                 .build();
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
