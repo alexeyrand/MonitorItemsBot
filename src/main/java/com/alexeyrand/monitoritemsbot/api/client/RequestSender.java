@@ -13,20 +13,24 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.Future;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 @Component
 public class RequestSender {
 
 
-    public void getRequest(URI url, String chatId) {
+    public void getRequest(URI url) {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(20))
+                .connectTimeout(Duration.of(5, SECONDS))
                 .build();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
-                .timeout(Duration.ofMinutes(2))
-                .POST(HttpRequest.BodyPublishers.ofString(chatId))
+                .timeout(Duration.of(5, SECONDS))
+                .GET()
                 .build();
+
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
                 .thenAccept(System.out::println);
