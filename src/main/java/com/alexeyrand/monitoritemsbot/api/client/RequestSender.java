@@ -1,17 +1,16 @@
 package com.alexeyrand.monitoritemsbot.api.client;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import com.alexeyrand.monitoritemsbot.api.dto.UrlDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.concurrent.Future;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -19,7 +18,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class RequestSender {
 
 
-    public void getRequest(URI url) {
+    public void postStartRequest(URI url, String chatId) {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.of(5, SECONDS))
@@ -28,17 +27,33 @@ public class RequestSender {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .timeout(Duration.of(5, SECONDS))
-                .GET()
+                .POST(HttpRequest.BodyPublishers.ofString(chatId))
                 .build();
 
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
                 .thenAccept(System.out::println);
+    }
+
+    public void postUrlRequest(URI url, UrlDto urlDto) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonUrlDto = mapper.writeValueAsString(urlDto);
+
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.of(5, SECONDS))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .timeout(Duration.of(5, SECONDS))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonUrlDto))
+                .build();
+
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
 
 
-//        final RestTemplate restTemplate = new RestTemplate();
-//        final String stringPosts = restTemplate.getForObject(url, String.class);
-//        System.out.println(stringPosts);
     }
 
 }

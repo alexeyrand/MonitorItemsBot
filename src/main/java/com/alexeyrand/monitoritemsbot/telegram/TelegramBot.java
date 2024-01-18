@@ -8,6 +8,7 @@ import com.alexeyrand.monitoritemsbot.config.BotConfig;
 import com.alexeyrand.monitoritemsbot.telegram.handler.MessageHandler;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.HomeKeyboard;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.SettingsKeyboard;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -84,14 +86,23 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (waitMessage) {
                 String[] parseUrl = messageHandler.urlParse(messageText);
-                urlMap.put(URL, parseUrl[1]);
-                UrlDto urlDto = urlDtoFactory.makeUrlDto(parseUrl[0], parseUrl[1]);
-
-                sendMessageWithKeyboard(chatId, "Url изменен на " + urlMap.get(URL), SettingsKeyboard.setKeyboard());
-                waitMessage = false;
-
+                if (parseUrl.length != 2) {
+                    sendMessageWithKeyboard(chatId, "Некорректный url.\n" +
+                            "Введите название и url через пробел:\n" +
+                            "*''Stone_island  http://...''*" + urlMap.get(URL), SettingsKeyboard.setKeyboard());
+                    waitMessage = false;
+                } else {
+                    urlMap.put(URL, parseUrl[1]);
+                    UrlDto urlDto = urlDtoFactory.makeUrlDto(parseUrl[0], parseUrl[1]);
+                    try {
+                        requestSender.postUrlRequest(URI.create("http://localhost:9090/url"), urlDto);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                    sendMessageWithKeyboard(chatId, "Url изменен на " + urlMap.get(URL), SettingsKeyboard.setKeyboard());
+                    waitMessage = false;
+                }
             } else {
-
                 switch (messageText) {
                     case "/help" -> HelpCommandReceived(chatId);
                     case "/start" -> StartCommandReceived(chatId);
@@ -119,22 +130,21 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void SettingsCommandReceived(String chatId) {
-        String answer = "Для каждого url установите соответствующий адрес";
+        String answer = "Для каждого url установите свой адрес ";
         ReplyKeyboardMarkup keyboard = SettingsKeyboard.setKeyboard();
         sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'settings'");
     }
 
     public void StartCommandReceived(String chatId) {
-
-        requestSender.getRequest(URI.create("http://localhost:9090/start"), chatId);
+        requestSender.postStartRequest(URI.create("http://localhost:9090/start"), chatId);
         String answer = "Монитор запущен";
         sendMessage(chatId, answer);
         log.info("Monitor is running");
     }
 
     public void StopCommandReceived(String chatId) {
-        requestSender.getRequest(URI.create("http://localhost:9090/stop"), chatId);
+        requestSender.postStartRequest(URI.create("http://localhost:9090/stop"), chatId);
         String answer = "Монитор остановлен";
         sendMessage(chatId, answer);
         log.info("Monitor is stopped");
@@ -206,6 +216,18 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void sendMessageWithKeyboard(String chatId, String textToSend, ReplyKeyboardMarkup keyboardMarkup) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textToSend);
+        message.setReplyMarkup(keyboardMarkup);
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
+        }
+    }
+
+    public void sendMessageWithLineKeyboard(String chatId, String textToSend, InlineKeyboardMarkup keyboardMarkup) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);

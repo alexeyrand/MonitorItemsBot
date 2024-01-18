@@ -8,8 +8,8 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonAutoDetect
+
 public class UrlDto {
-    private String name;
-    private String url;
+    public String name;
+    public String url;
 }
