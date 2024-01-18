@@ -14,7 +14,6 @@ public class MonitorItemsController {
 
     @PostMapping("/item")
     public void getItem(@RequestBody String url) {
-        System.out.println(url);
         String[] split = url.split(" ");
         telegramBot.sendMessage(split[1], split[0]);
     }
