@@ -1,6 +1,8 @@
 package com.alexeyrand.monitoritemsbot.api.client;
 
+import com.alexeyrand.monitoritemsbot.api.dto.MessageDto;
 import com.alexeyrand.monitoritemsbot.api.dto.UrlDto;
+import com.alexeyrand.monitoritemsbot.api.factories.MessageDtoFactory;
 import com.alexeyrand.monitoritemsbot.telegram.TelegramBot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,25 +29,35 @@ public class RequestSender {
 
     @Lazy
     @Autowired
-    TelegramBot telegramBot;
+    private TelegramBot telegramBot;
 
+    @Autowired
+    private MessageDtoFactory messageDtoFactory;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public void postStartRequest(URI url, String chatId, Integer messageId) {
+        MessageDto messageDto = messageDtoFactory.makeMessageDto(chatId, messageId);
+        String jsonMessageDto;
+        try {
+            jsonMessageDto = mapper.writeValueAsString(messageDto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
         HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.of(5, SECONDS))
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .timeout(Duration.of(5, SECONDS))
-                .POST(HttpRequest.BodyPublishers.ofString(chatId + " " + messageId))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonMessageDto))
                 .build();
 
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
         try {
             String[] response = responseFuture.get().toString().split( "\\) ");
-            System.out.println(response[1].equals("200"));
+            //System.out.println(response[1].equals("200"));
             if (response[1].equals("200")) {
                 telegramBot.sendMessage(chatId, "Монитор запускается ...\nЭто займет несколько секунд");
             }
@@ -56,7 +68,6 @@ public class RequestSender {
 
     public void postUrlRequest(URI url, String chatId, UrlDto urlDto) throws JsonProcessingException {
 
-        ObjectMapper mapper = new ObjectMapper();
         String jsonUrlDto = mapper.writeValueAsString(urlDto);
 
         HttpClient client = HttpClient.newBuilder()

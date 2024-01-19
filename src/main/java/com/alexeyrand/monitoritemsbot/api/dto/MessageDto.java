@@ -1,14 +1,14 @@
 package com.alexeyrand.monitoritemsbot.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class UrlDto {
-    public String name;
-    public String url;
+public class MessageDto {
+    private String chatId;
+    private Integer messageId;
 }
