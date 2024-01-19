@@ -18,4 +18,12 @@ public class MonitorItemsController {
         telegramBot.sendMessage(split[1], split[0]);
     }
 
+    @PostMapping("/status")
+    public void getStatus(@RequestBody String message) {
+        System.out.println(message);
+        String[] split = message.split(" ");
+        Integer messageId = Integer.parseInt(split[1]);
+        telegramBot.deleteMessage(split[0], messageId);
+    }
+
 }

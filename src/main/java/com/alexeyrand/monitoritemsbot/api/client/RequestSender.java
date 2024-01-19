@@ -1,8 +1,12 @@
 package com.alexeyrand.monitoritemsbot.api.client;
 
 import com.alexeyrand.monitoritemsbot.api.dto.UrlDto;
+import com.alexeyrand.monitoritemsbot.telegram.TelegramBot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -11,14 +15,22 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Component
+
 public class RequestSender {
 
+    @Lazy
+    @Autowired
+    TelegramBot telegramBot;
 
-    public void postStartRequest(URI url, String chatId) {
+
+    public void postStartRequest(URI url, String chatId, Integer messageId) {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.of(5, SECONDS))
@@ -27,21 +39,27 @@ public class RequestSender {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .timeout(Duration.of(5, SECONDS))
-                .POST(HttpRequest.BodyPublishers.ofString(chatId))
+                .POST(HttpRequest.BodyPublishers.ofString(chatId + " " + messageId))
                 .build();
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(System.out::println);
+        CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            String[] response = responseFuture.get().toString().split( "\\) ");
+            System.out.println(response[1].equals("200"));
+            if (response[1].equals("200")) {
+                telegramBot.sendMessage(chatId, "Монитор запускается ...\nЭто займет несколько секунд");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void postUrlRequest(URI url, UrlDto urlDto) throws JsonProcessingException {
+    public void postUrlRequest(URI url, String chatId, UrlDto urlDto) throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonUrlDto = mapper.writeValueAsString(urlDto);
 
         HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.of(5, SECONDS))
                 .build();
 
@@ -51,7 +69,16 @@ public class RequestSender {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonUrlDto))
                 .build();
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            String response = responseFuture.get().toString();
+            if (response.charAt(0) == '2') {
+                telegramBot.sendMessage(chatId, "Новый Url установлен");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
 
 
     }

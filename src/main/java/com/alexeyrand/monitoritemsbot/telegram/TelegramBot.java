@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -38,6 +39,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private RequestSender requestSender;
+
     @Autowired
     private MessageHandler messageHandler;
     @Autowired
@@ -81,6 +83,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             Message message = update.getMessage();
+            Integer messageId = message.getMessageId();
             String chatId = message.getChatId().toString();
             String messageText = message.getText();
 
@@ -95,7 +98,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     urlMap.put(URL, parseUrl[1]);
                     UrlDto urlDto = urlDtoFactory.makeUrlDto(parseUrl[0], parseUrl[1]);
                     try {
-                        requestSender.postUrlRequest(URI.create("http://localhost:9090/url"), urlDto);
+                        requestSender.postUrlRequest(URI.create("http://localhost:9090/url"), chatId, urlDto);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
@@ -105,8 +108,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else {
                 switch (messageText) {
                     case "/help" -> HelpCommandReceived(chatId);
-                    case "/start" -> StartCommandReceived(chatId);
-                    case "/stop" -> StopCommandReceived(chatId);
+                    case "/start" -> StartCommandReceived(chatId, messageId);
+                    case "/stop" -> StopCommandReceived(chatId, messageId);
                     case "/settings" -> SettingsCommandReceived(chatId);
                     case "/status" -> StatusCommandReceived(chatId);
                     case "<---   back" -> HomeCommandReceived(chatId);
@@ -136,15 +139,13 @@ public class TelegramBot extends TelegramLongPollingBot {
         log.info("Setting button 'settings'");
     }
 
-    public void StartCommandReceived(String chatId) {
-        requestSender.postStartRequest(URI.create("http://localhost:9090/start"), chatId);
-        String answer = "Монитор запущен";
-        sendMessage(chatId, answer);
+    public void StartCommandReceived(String chatId, Integer messageId) {
+        requestSender.postStartRequest(URI.create("http://localhost:9090/start"), chatId, messageId);
         log.info("Monitor is running");
     }
 
-    public void StopCommandReceived(String chatId) {
-        requestSender.postStartRequest(URI.create("http://localhost:9090/stop"), chatId);
+    public void StopCommandReceived(String chatId, Integer messageId) {
+        requestSender.postStartRequest(URI.create("http://localhost:9090/stop"), chatId, messageId);
         String answer = "Монитор остановлен";
         sendMessage(chatId, answer);
         log.info("Monitor is stopped");
@@ -156,7 +157,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'home'");
     }
-    public void  StatusCommandReceived(String chatId) {
+
+    public void StatusCommandReceived(String chatId) {
         String answer = "Текущие url:\n"
                 + urlMap.get("url1") + "\n"
                 + urlMap.get("url2") + "\n"
@@ -205,7 +207,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void sendMessage(String chatId, String textToSend) {
         SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
+        message.setChatId(chatId);
         message.setText(textToSend);
         try {
             execute(message);
@@ -227,15 +229,36 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendMessageWithLineKeyboard(String chatId, String textToSend, InlineKeyboardMarkup keyboardMarkup) {
+    public void deleteMessage(String chatId, Integer messageId) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId+1);
+
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            execute(deleteMessage);
+            sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop.");
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
+        }
+    }
+
+    public Integer sendMessageDeleted(String chatId, String textToSend, Integer messageId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
-        message.setReplyMarkup(keyboardMarkup);
+
         try {
             execute(message);
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
+        return messageId;
     }
 }
