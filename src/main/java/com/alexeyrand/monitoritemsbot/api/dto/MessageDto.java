@@ -8,6 +8,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+
 public class MessageDto {
     private String chatId;
     private Integer messageId;

@@ -2,8 +2,6 @@ package com.alexeyrand.monitoritemsbot.telegram;
 
 
 import com.alexeyrand.monitoritemsbot.api.client.RequestSender;
-import com.alexeyrand.monitoritemsbot.api.dto.UrlDto;
-import com.alexeyrand.monitoritemsbot.api.factories.UrlDtoFactory;
 import com.alexeyrand.monitoritemsbot.config.BotConfig;
 import com.alexeyrand.monitoritemsbot.telegram.handler.MessageHandler;
 import com.alexeyrand.monitoritemsbot.telegram.keyboard.HomeKeyboard;
@@ -23,13 +21,17 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -39,17 +41,15 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private RequestSender requestSender;
-
     @Autowired
     private MessageHandler messageHandler;
-    @Autowired
-    private UrlDtoFactory urlDtoFactory;
+
     boolean waitMessage = false;
-    Map<String, String> urlMap = new ConcurrentHashMap<>();
+    Map<String, String> urlsMap = new ConcurrentHashMap<>();
 
     @Getter
     @Setter
-    private String URL = new String();
+    private String urlKey = new String();
 
 
     public TelegramBot(BotConfig config) {
@@ -63,10 +63,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             log.error("Error setting bots command list: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
-        urlMap.put("url1", "");
-        urlMap.put("url2", "");
-        urlMap.put("url3", "");
-        urlMap.put("url4", "");
+        urlsMap.put("url1", "");
+        urlsMap.put("url2", "");
+        urlsMap.put("url3", "");
+        urlsMap.put("url4", "");
     }
 
     @Override
@@ -89,20 +89,20 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (waitMessage) {
                 String[] parseUrl = messageHandler.urlParse(messageText);
-                if (parseUrl.length != 2) {
+                if (parseUrl.length != 2 || parseUrl[1].charAt(7) == '/') {
                     sendMessageWithKeyboard(chatId, "Некорректный url.\n" +
-                            "Введите название и url через пробел:\n" +
-                            "*''Stone_island  http://...''*" + urlMap.get(URL), SettingsKeyboard.setKeyboard());
+                            "Введите \"название\" и \"url\" через пробел:\n" +
+                            "''Nike  http://avito...''" , SettingsKeyboard.setKeyboard());
                     waitMessage = false;
                 } else {
-                    urlMap.put(URL, parseUrl[1]);
-                    UrlDto urlDto = urlDtoFactory.makeUrlDto(parseUrl[0], parseUrl[1]);
+                    urlsMap.put(urlKey, parseUrl[1]);
+
                     try {
-                        requestSender.postUrlRequest(URI.create("http://localhost:9090/url"), chatId, urlDto);
+                        requestSender.postUrlRequest(URI.create(config.getUrlEndPoint()), chatId, messageId, urlKey, parseUrl[1]);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-                    sendMessageWithKeyboard(chatId, "Url изменен на " + urlMap.get(URL), SettingsKeyboard.setKeyboard());
+                    sendMessageWithKeyboard(chatId, "Url изменен на " + urlsMap.get(urlKey), SettingsKeyboard.setKeyboard());
                     waitMessage = false;
                 }
             } else {
@@ -140,14 +140,20 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void StartCommandReceived(String chatId, Integer messageId) {
-        requestSender.postStartRequest(URI.create("http://localhost:9090/start"), chatId, messageId);
+        try {
+            requestSender.postStartRequest(URI.create(config.getStartEndpoint()), chatId, messageId);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         log.info("Monitor is running");
     }
 
     public void StopCommandReceived(String chatId, Integer messageId) {
-        requestSender.postStartRequest(URI.create("http://localhost:9090/stop"), chatId, messageId);
-        String answer = "Монитор остановлен";
-        sendMessage(chatId, answer);
+        try {
+            requestSender.getStopRequest(URI.create(config.getStopEndPoint()), chatId, messageId);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         log.info("Monitor is stopped");
     }
 
@@ -160,10 +166,10 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void StatusCommandReceived(String chatId) {
         String answer = "Текущие url:\n"
-                + urlMap.get("url1") + "\n"
-                + urlMap.get("url2") + "\n"
-                + urlMap.get("url3") + "\n"
-                + urlMap.get("url4");
+                + urlsMap.get("url1") + "\n"
+                + urlsMap.get("url2") + "\n"
+                + urlsMap.get("url3") + "\n"
+                + urlsMap.get("url4");
         ReplyKeyboardMarkup keyboard = SettingsKeyboard.setKeyboard();
         sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'status'");
@@ -199,8 +205,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void sendMessageWait(String chatId, String textToSend, String url) {
-        setURL("" + url);
-        System.out.println(getURL());
+        setUrlKey("" + url);
+        System.out.println(getUrlKey());
         sendMessage(chatId, textToSend);
         waitMessage = true;
     }
@@ -209,6 +215,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(textToSend);
+        System.out.println(textToSend);
         try {
             execute(message);
             log.info("Message sent");
@@ -229,7 +236,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    public void deleteMessage(String chatId, Integer messageId) {
+    public void deleteMessage(String chatId, Integer messageId, String status) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId+1);
@@ -243,7 +250,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         try {
             execute(deleteMessage);
-            sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop.");
+            if (status.equals("start")) {
+                sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop."); }
+            if (status.equals("stop")) {
+                sendMessage(chatId, "Монитор остановлен"); }
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }

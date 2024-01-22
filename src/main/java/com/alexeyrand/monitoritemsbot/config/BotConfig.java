@@ -20,4 +20,20 @@ public class BotConfig {
     @Value("${answer.command.help}")
     private String helpCommand;
 
+    //////////////////////////////////////////////////////////////////////////////////////////////// monitor endpoints
+
+    @Value("${monitor.endpoint.start}")
+    private String startEndpoint;
+
+    @Value("${monitor.endpoint.stop}")
+    private String stopEndPoint;
+
+    @Value("${monitor.endpoint.url}")
+    private String urlEndPoint;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////// ulr
+
+    @Value("${monitor.urls.file.name}")
+    private String urlsFileName;
+
 }

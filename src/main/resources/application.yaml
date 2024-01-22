@@ -3,10 +3,19 @@ bot:
   token: 5682349016:AAEgJjp4BR9EAghVLZ7dE8TYQ2lZPa3vMWI
 
 
+monitor:
+  urls:
+    file:
+      name: urls.txt
+  endpoint:
+    start: http://localhost:9090/api/v1/start
+    stop: http://localhost:9090/api/v1/stop
+    url: http://localhost:9090/api/v1/urls
+
 
 
 
 
 answer:
   command:
-    help: "I'm a bot that sends information about products. My commands: \n\n/start\n\n/settings"
+    help: "Привет, я телеграм бот для отслеживания товаров.\n\nМои команды: \n\\help\n/start\n/stop\n/settings\n/status"
