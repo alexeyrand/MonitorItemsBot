@@ -27,8 +27,10 @@ public class MonitorItemsController {
         String name = itemDto.getName();
         String price = itemDto.getPrice();
         String href = itemDto.getHref();
+        String descr = itemDto.getDescription().substring(0, 150);
+        String image = itemDto.getImage();
         //System.out.println(itemDto);
-        telegramBot.sendMessage(chatId, name + "\n" + price + "\n" + href);
+        telegramBot.sendMessage(chatId, name + "\n" + price + "\n\n" + descr + "\n" + href + "\n" + image);
     }
 
     @PostMapping(value = GET_STATUS, consumes = {"application/json"})
