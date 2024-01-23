@@ -27,10 +27,11 @@ public class MonitorItemsController {
         String name = itemDto.getName();
         String price = itemDto.getPrice();
         String href = itemDto.getHref();
-        String descr = itemDto.getDescription().substring(0, 150);
+        String descr = itemDto.getDescription().substring(0, 180);
         String image = itemDto.getImage();
-        //System.out.println(itemDto);
-        telegramBot.sendMessage(chatId, name + "\n" + price + "\n\n" + descr + "\n" + href + "\n" + image);
+        System.out.println(itemDto);
+        telegramBot.sendItem(chatId, "[" + name + "]" + "(" + href +")" + "\nЦена: " + price + "\n\n" +
+                descr + "\n" + image);
     }
 
     @PostMapping(value = GET_STATUS, consumes = {"application/json"})
@@ -38,5 +39,6 @@ public class MonitorItemsController {
         telegramBot.deleteMessage(messageDto.getChatId(), messageDto.getMessageId(), status);
         return messageDto;
     }
+
 
 }

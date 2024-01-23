@@ -92,7 +92,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 if (parseUrl.length != 2 || parseUrl[1].charAt(7) == '/') {
                     sendMessageWithKeyboard(chatId, "Некорректный url.\n" +
                             "Введите \"название\" и \"url\" через пробел:\n" +
-                            "''Nike  http://avito...''" , SettingsKeyboard.setKeyboard());
+                            "''Nike  http://avito...''", SettingsKeyboard.setKeyboard());
                     waitMessage = false;
                 } else {
                     urlsMap.put(urlKey, parseUrl[1]);
@@ -117,6 +117,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "url2" -> SetUrl2CommandReceived(chatId);
                     case "url3" -> SetUrl3CommandReceived(chatId);
                     case "url4" -> SetUrl4CommandReceived(chatId);
+                    case "/test" -> test(chatId, "g");
                     default -> sendMessage(chatId, "method not allowed");
                 }
 
@@ -239,7 +240,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void deleteMessage(String chatId, Integer messageId, String status) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
-        deleteMessage.setMessageId(messageId+1);
+        deleteMessage.setMessageId(messageId + 1);
 
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
@@ -251,24 +252,42 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(deleteMessage);
             if (status.equals("start")) {
-                sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop."); }
+                sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop.");
+            }
             if (status.equals("stop")) {
-                sendMessage(chatId, "Монитор остановлен"); }
+                sendMessage(chatId, "Монитор остановлен");
+            }
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
     }
 
-    public Integer sendMessageDeleted(String chatId, String textToSend, Integer messageId) {
+    public void sendItem(String chatId, String textToSend) {
         SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
+        message.enableMarkdown(true);
+        message.setChatId(chatId);
         message.setText(textToSend);
-
+        System.out.println(textToSend);
         try {
             execute(message);
+            log.info("Message sent");
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
-        return messageId;
     }
+    public void test(String chatId, String textToSend) {
+        SendMessage message = new SendMessage();
+        message.enableMarkdown(true);
+        message.setChatId(chatId);
+        message.setText("*HELLO*" + "\n" + "![" + "Logo" + "]" +"(" +"https://80.img.avito.st/image/1/1.QXxpTra17ZUH7g2VZ3dYI2bs75XX5TeUPe_vlw.QR7sCF7_LKiLpoqtcEsVhoUVmF0DlQEiNgjeaR5S9gw" + ")" );
+        System.out.println(textToSend);
+        try {
+            execute(message);
+            log.info("Message sent");
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
+        }
+    }
+
+
 }
