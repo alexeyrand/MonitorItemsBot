@@ -16,7 +16,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -262,14 +264,18 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendItem(String chatId, String textToSend) {
+    public void sendItem(String chatId, String textToSend, InputFile image) {
         SendMessage message = new SendMessage();
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(chatId);
+        photo.setPhoto(image);
         message.enableMarkdown(true);
         message.setChatId(chatId);
         message.setText(textToSend);
-        System.out.println(textToSend);
+        //System.out.println(textToSend);
         try {
             execute(message);
+            execute(photo);
             log.info("Message sent");
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());

@@ -8,6 +8,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
@@ -27,11 +28,13 @@ public class MonitorItemsController {
         String name = itemDto.getName();
         String price = itemDto.getPrice();
         String href = itemDto.getHref();
-        String descr = itemDto.getDescription().substring(0, 210);
+        String descr = itemDto.getDescription();
         String image = itemDto.getImage();
-        System.out.println(itemDto);
+        //System.out.println(image);
+        InputFile file = new InputFile(image);
+
         telegramBot.sendItem(chatId, "[" + name + "]" + "(" + href +")" + "\nЦена: " + price + "\n\n" +
-                descr + "\n" + image);
+                descr, file);
     }
 
     @PostMapping(value = GET_STATUS, consumes = {"application/json"})
