@@ -6,8 +6,8 @@
 + Минимальная задержка
 + Возможность парсить защищенные сайты
 ### **Общая структурная схема архитектуры** 
-Monitor telegram bot service - spring boot приложение, отвечающее за функционирование телеграм бота.  
-Monitor service (публичный репозиторй https://github.com/alexeyrand/MonitorItems) - spring boot приложение, отвечающее за парсинг веб сайтов.  
+- Monitor telegram bot service - spring boot приложение, отвечающее за функционирование телеграм бота.  
+- Monitor service (публичный репозиторй https://github.com/alexeyrand/MonitorItems) - spring boot приложение, отвечающее за парсинг веб сайтов.  
 ![Structure schema](/images/schema.png)
 ### **Содержание**
 
