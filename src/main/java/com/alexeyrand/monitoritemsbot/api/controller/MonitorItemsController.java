@@ -27,7 +27,7 @@ public class MonitorItemsController {
         String name = itemDto.getName();
         String price = itemDto.getPrice();
         String href = itemDto.getHref();
-        String descr = itemDto.getDescription().substring(0, 180);
+        String descr = itemDto.getDescription().substring(0, 210);
         String image = itemDto.getImage();
         System.out.println(itemDto);
         telegramBot.sendItem(chatId, "[" + name + "]" + "(" + href +")" + "\nЦена: " + price + "\n\n" +
