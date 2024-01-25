@@ -89,21 +89,25 @@ public class TelegramBot extends TelegramLongPollingBot {
             String chatId = message.getChatId().toString();
             String messageText = message.getText();
 
+            System.out.println("waitMessage: " + waitMessage);
             if (waitMessage) {
+                System.out.println("Зашел в первый иф");
                 String[] parseUrl = messageHandler.urlParse(messageText);
-                if (parseUrl.length != 2 || parseUrl[1].charAt(7) == '/') {
+                System.out.println(Arrays.toString(parseUrl));
+                if (parseUrl.length != 2 || parseUrl[1].charAt(6) != '/') {
                     sendMessageWithKeyboard(chatId, "Некорректный url.\n" +
                             "Введите \"название\" и \"url\" через пробел:\n" +
                             "''Nike  http://avito...''", SettingsKeyboard.setKeyboard());
-                    waitMessage = false;
+                    //waitMessage = false;
                 } else {
+                    System.out.println("Зашел в отправитель");
                     urlsMap.put(urlKey, parseUrl[1]);
 
-                    try {
-                        requestSender.postUrlRequest(URI.create(config.getUrlEndPoint()), chatId, messageId, urlKey, parseUrl[1]);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
+//                    try {
+//                        requestSender.postUrlRequest(URI.create(config.getUrlEndPoint()), chatId, messageId, urlKey, parseUrl[1]);
+//                    } catch (JsonProcessingException e) {
+//                        throw new RuntimeException(e);
+//                    }
                     sendMessageWithKeyboard(chatId, "Url изменен на " + urlsMap.get(urlKey), SettingsKeyboard.setKeyboard());
                     waitMessage = false;
                 }
@@ -122,7 +126,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "/test" -> test(chatId, "g");
                     default -> sendMessage(chatId, "method not allowed");
                 }
-
+                System.out.println("Конец обработки сообщений");
 
             }
         }
@@ -173,7 +177,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 + urlsMap.get("url2") + "\n"
                 + urlsMap.get("url3") + "\n"
                 + urlsMap.get("url4");
-        ReplyKeyboardMarkup keyboard = SettingsKeyboard.setKeyboard();
+        ReplyKeyboardMarkup keyboard = HomeKeyboard.setKeyboard();
         sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'status'");
     }
@@ -182,6 +186,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void SetUrl1CommandReceived(String chatId) {
         String answer = "Введите url:";
         String urlKey = "url1";
+        //waitMessage = true;
         sendMessageWait(chatId, answer, urlKey);
         log.info("Setting button 'URL1'");
     }
