@@ -3,14 +3,11 @@ package com.alexeyrand.monitoritemsbot.api.controller;
 import com.alexeyrand.monitoritemsbot.api.dto.ItemDto;
 import com.alexeyrand.monitoritemsbot.api.dto.MessageDto;
 import com.alexeyrand.monitoritemsbot.telegram.TelegramBot;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -28,13 +25,32 @@ public class MonitorItemsController {
         String name = itemDto.getName();
         String price = itemDto.getPrice();
         String href = itemDto.getHref();
-        String descr = itemDto.getDescription();
         String image = itemDto.getImage();
+
+        String descriptionDTO = itemDto.getDescription();
+        String description;
+        try {
+            description = descriptionDTO.substring(0, 80);
+        } catch (StringIndexOutOfBoundsException SIOBE) {
+            description = descriptionDTO;
+        }
         //System.out.println(image);
         InputFile file = new InputFile(image);
-
-        telegramBot.sendItem(chatId, "[" + name + "]" + "(" + href +")" + "\nЦена: " + price + "\n\n" +
-                descr, file);
+        if (!Objects.equals(image, "")) {
+            telegramBot.sendItem(chatId,
+                    "[" + name + "]"
+                            + "(" + href + "/)"
+                            + "\nЦена: " + price
+                            + description
+                            + "\n"
+                    //+ image
+                    , file);
+        } else {
+            telegramBot.sendMessage(chatId, "[" + name + "]"
+                    + "(" + href + "/)"
+                    + "\nЦена " + price
+                    + description);
+        }
     }
 
     @PostMapping(value = GET_STATUS, consumes = {"application/json"})

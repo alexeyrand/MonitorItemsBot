@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -91,23 +92,19 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             System.out.println("waitMessage: " + waitMessage);
             if (waitMessage) {
-                System.out.println("Зашел в первый иф");
                 String[] parseUrl = messageHandler.urlParse(messageText);
                 System.out.println(Arrays.toString(parseUrl));
                 if (parseUrl.length != 2 || parseUrl[1].charAt(6) != '/') {
                     sendMessageWithKeyboard(chatId, "Некорректный url.\n" +
                             "Введите \"название\" и \"url\" через пробел:\n" +
                             "''Nike  http://avito...''", SettingsKeyboard.setKeyboard());
-                    //waitMessage = false;
                 } else {
-                    System.out.println("Зашел в отправитель");
                     urlsMap.put(urlKey, parseUrl[1]);
-
-//                    try {
-//                        requestSender.postUrlRequest(URI.create(config.getUrlEndPoint()), chatId, messageId, urlKey, parseUrl[1]);
-//                    } catch (JsonProcessingException e) {
-//                        throw new RuntimeException(e);
-//                    }
+                    try {
+                        requestSender.postUrlRequest(URI.create(config.getUrlEndPoint()), chatId, messageId, urlKey, parseUrl[1]);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
                     sendMessageWithKeyboard(chatId, "Url изменен на " + urlsMap.get(urlKey), SettingsKeyboard.setKeyboard());
                     waitMessage = false;
                 }
@@ -274,12 +271,16 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(image);
+        photo.setProtectContent(true);
+        //photo.setCaption(textToSend);
+        photo.setParseMode(ParseMode.MARKDOWN);
         message.enableMarkdown(true);
         message.setChatId(chatId);
         message.setText(textToSend);
-        //System.out.println(textToSend);
+        photo.setCaption(message.getText());
+//        //System.out.println(textToSend);
         try {
-            execute(message);
+            //execute(message);
             execute(photo);
             log.info("Message sent");
         } catch (TelegramApiException e) {
