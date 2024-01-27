@@ -40,16 +40,15 @@ public class MonitorItemsController {
             telegramBot.sendItem(chatId,
                     "[" + name + "]"
                             + "(" + href + "/)"
-                            + "\nЦена: " + price
-                            + description
-                            + "\n"
+                            + "\nЦена: " + price + " RUB"
+                            + "\n" + description
                     //+ image
                     , file);
         } else {
             telegramBot.sendMessage(chatId, "[" + name + "]"
                     + "(" + href + "/)"
-                    + "\nЦена " + price
-                    + description);
+                    + "\nЦена " + price + " RUB"
+                    + "\n" + description);
         }
     }
 
