@@ -124,7 +124,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                     default -> sendMessage(chatId, "method not allowed");
                 }
                 System.out.println("Конец обработки сообщений");
-
             }
         }
     }
