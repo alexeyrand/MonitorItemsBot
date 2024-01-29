@@ -1,4 +1,4 @@
-package com.alexeyrand.monitoritemsbot.api.dto;
+package com.alexeyrand.monitortelegrambot.api.dto;
 
 import lombok.*;
 

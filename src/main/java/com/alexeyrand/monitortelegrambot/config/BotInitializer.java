@@ -1,6 +1,6 @@
-package com.alexeyrand.monitoritemsbot.config;
+package com.alexeyrand.monitortelegrambot.config;
 
-import com.alexeyrand.monitoritemsbot.telegram.TelegramBot;
+import com.alexeyrand.monitortelegrambot.telegram.TelegramBot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;

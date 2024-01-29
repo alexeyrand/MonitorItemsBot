@@ -1,4 +1,4 @@
-package com.alexeyrand.monitoritemsbot.config;
+package com.alexeyrand.monitortelegrambot.config;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

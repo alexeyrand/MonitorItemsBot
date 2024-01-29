@@ -1,6 +1,6 @@
-package com.alexeyrand.monitoritemsbot.api.factories;
+package com.alexeyrand.monitortelegrambot.api.factories;
 
-import com.alexeyrand.monitoritemsbot.api.dto.MessageDto;
+import com.alexeyrand.monitortelegrambot.api.dto.MessageDto;
 import org.springframework.stereotype.Component;
 
 @Component
