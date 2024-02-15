@@ -16,7 +16,7 @@ import java.util.Objects;
 public class TelegramBotController {
 
     private final MessageSender messageSender;
-
+    final TelegramBot telegramBot;
     private static final String GET_ITEMS = "/items";
     private static final String GET_STATUS = "/status";
 
@@ -31,7 +31,7 @@ public class TelegramBotController {
         }
 
         if (!Objects.equals(itemDto.getImage(), "")) {
-            messageSender.sendItem(itemDto.getChatId(),
+            telegramBot.sendItem(itemDto.getChatId(),
                     "[" + itemDto.getName() + "]"
                             + "(" + itemDto.getHref() + "/)"
                             + "\nЦена: " + itemDto.getPrice() + " RUB"

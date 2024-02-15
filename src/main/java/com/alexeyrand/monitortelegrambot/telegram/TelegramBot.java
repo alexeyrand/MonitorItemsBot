@@ -14,7 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -147,6 +150,20 @@ public class TelegramBot extends TelegramLongPollingBot {
         log.info("Setting button 'URL4'");
     }
 
-
+    public void sendItem(String chatId, String textToSend, InputFile image) {
+        System.out.println("Зашел");
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(chatId);
+        photo.setPhoto(image);
+        photo.setProtectContent(true);
+        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setCaption(textToSend);
+        try {
+            execute(photo);
+            log.info("Message sent");
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
+        }
+    }
 
 }
