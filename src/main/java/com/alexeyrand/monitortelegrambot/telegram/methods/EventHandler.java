@@ -69,11 +69,7 @@ public class EventHandler {
     }
 
     public void StatusCommandReceived(String chatId, Map<String, String> urlsMap) {
-        String answer = "Текущие url:\n"
-                + urlsMap.get("url1") + "\n"
-                + urlsMap.get("url2") + "\n"
-                + urlsMap.get("url3") + "\n"
-                + urlsMap.get("url4");
+        String answer = "Монитор активен.";
         ReplyKeyboardMarkup keyboard = HomeKeyboard.setKeyboard();
         messageSender.sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'status'");

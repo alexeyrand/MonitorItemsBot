@@ -51,12 +51,15 @@ public class RequestSender {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonMessageDto))
                 .build();
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+
         try {
             if (responseFuture.get().statusCode() == 200) {
                 messageSender.sendMessage(chatId, "Монитор запускается ...\nЭто займет несколько секунд");
+
             }
         } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
+            //throw new RuntimeException(e);
         }
     }
 
