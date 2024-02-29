@@ -16,12 +16,14 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.net.URI;
@@ -160,6 +162,28 @@ public class TelegramBot extends TelegramLongPollingBot {
         photo.setCaption(textToSend);
         try {
             execute(photo);
+            log.info("Message sent");
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
+        }
+    }
+
+    public void sendItemWithInLineBlock(String chatId, String textToSend, InputFile image, InlineKeyboardMarkup inline) {
+        System.out.println("Зашел");
+        SendPhoto photo = new SendPhoto();
+        SendMessage ms = new SendMessage();
+        photo.setChatId(chatId);
+        photo.setPhoto(image);
+        photo.setProtectContent(true);
+        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setCaption(textToSend);
+        ms.setReplyMarkup(inline);
+        try {
+            System.out.println("Отправляю смс");
+            execute(ms);
+            System.out.println("отправляю фото");
+            execute(photo);
+
             log.info("Message sent");
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());

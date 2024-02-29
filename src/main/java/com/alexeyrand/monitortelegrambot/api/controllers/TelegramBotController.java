@@ -3,6 +3,7 @@ package com.alexeyrand.monitortelegrambot.api.controllers;
 import com.alexeyrand.monitortelegrambot.api.dto.ItemDto;
 import com.alexeyrand.monitortelegrambot.api.dto.MessageDto;
 import com.alexeyrand.monitortelegrambot.telegram.TelegramBot;
+import com.alexeyrand.monitortelegrambot.telegram.inline.BlockListInline;
 import com.alexeyrand.monitortelegrambot.telegram.methods.MessageSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ public class TelegramBotController {
 
     private final MessageSender messageSender;
     final TelegramBot telegramBot;
+    //private final BlockListInline inline;
     private static final String GET_ITEMS = "/items";
     private static final String GET_STATUS = "/status";
 
@@ -30,14 +32,24 @@ public class TelegramBotController {
             description = descriptionDTO;
         }
 
-        if (!Objects.equals(itemDto.getImage(), "") && !Objects.equals(itemDto.getShop(), "")) {
-            telegramBot.sendItem(itemDto.getChatId(),
-                    "[" + itemDto.getName() + "]"
-                            + "(" + itemDto.getHref() + "/)"
-                            + "\nЦена: " + itemDto.getPrice() + " RUB"
-                            + "\n" + description + "\n"
-                            + itemDto.getShop()
-                    , new InputFile(itemDto.getImage()));
+        if (!Objects.equals(itemDto.getImage(), "")) {
+            if(Objects.equals(itemDto.getShop(), "")) {
+                telegramBot.sendItem(itemDto.getChatId(),
+                        "[" + itemDto.getName() + "]"
+                                + "(" + itemDto.getHref() + "/)"
+                                + "\nЦена: " + itemDto.getPrice() + " RUB"
+                                + "\n" + description
+                        , new InputFile(itemDto.getImage()));
+            } else {
+                System.out.println("С инлайном" + BlockListInline.blackListInline());
+                telegramBot.sendItemWithInLineBlock(itemDto.getChatId(),
+                        "[" + itemDto.getName() + "]"
+                                + "(" + itemDto.getHref() + "/)"
+                                + "\nЦена: " + itemDto.getPrice() + " RUB"
+                                + "\n" + description
+                        , new InputFile(itemDto.getImage()), BlockListInline.blackListInline());
+
+            }
         } else {
             messageSender.sendMessage(itemDto.getChatId(), "[" + itemDto.getName() + "]"
                     + "(" + itemDto.getHref() + "/)"

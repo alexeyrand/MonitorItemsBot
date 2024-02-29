@@ -1,11 +1,13 @@
 package com.alexeyrand.monitortelegrambot.telegram.inline;
 
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class BlockListInline {
 
     public static InlineKeyboardMarkup blackListInline() {
@@ -17,6 +19,9 @@ public class BlockListInline {
         inlineKeyboardButton1.setCallbackData("/hello");
         inlineKeyboardButton1.setUrl("");
         rowInline1.add(inlineKeyboardButton1);
+        rowsInline.add(rowInline1);
+        markupInline.setKeyboard(rowsInline);
+
         return markupInline;
     }
 
