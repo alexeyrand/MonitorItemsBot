@@ -30,12 +30,13 @@ public class TelegramBotController {
             description = descriptionDTO;
         }
 
-        if (!Objects.equals(itemDto.getImage(), "")) {
+        if (!Objects.equals(itemDto.getImage(), "") && !Objects.equals(itemDto.getShop(), "")) {
             telegramBot.sendItem(itemDto.getChatId(),
                     "[" + itemDto.getName() + "]"
                             + "(" + itemDto.getHref() + "/)"
                             + "\nЦена: " + itemDto.getPrice() + " RUB"
-                            + "\n" + description
+                            + "\n" + description + "\n"
+                            + itemDto.getShop()
                     , new InputFile(itemDto.getImage()));
         } else {
             messageSender.sendMessage(itemDto.getChatId(), "[" + itemDto.getName() + "]"
