@@ -170,7 +170,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(image);
-        photo.setProtectContent(true);
         photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(textToSend);
         try {
