@@ -101,4 +101,21 @@ public class MessageSender {
     }
 
 
+
+    public void deleteAdv(String chatId, Integer messageId, String answer) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+
+        try {
+            telegramBot.execute(deleteMessage);
+                sendMessage(chatId, "Продавец заблокирован");
+
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
+        }
+    }
+
 }

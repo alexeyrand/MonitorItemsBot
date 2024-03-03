@@ -18,7 +18,7 @@ public class TelegramBotController {
 
     private final MessageSender messageSender;
     final TelegramBot telegramBot;
-    //private final BlockListInline inline;
+    private final BlockListInline inline;
     private static final String GET_ITEMS = "/items";
     private static final String GET_STATUS = "/status";
 
@@ -41,13 +41,12 @@ public class TelegramBotController {
                                 + "\n" + description
                         , new InputFile(itemDto.getImage()));
             } else {
-                System.out.println("С инлайном" + BlockListInline.blackListInline());
                 telegramBot.sendItemWithInLineBlock(itemDto.getChatId(),
                         "[" + itemDto.getName() + "]"
                                 + "(" + itemDto.getHref() + "/)"
                                 + "\nЦена: " + itemDto.getPrice() + " RUB"
                                 + "\n" + description
-                        , new InputFile(itemDto.getImage()), BlockListInline.blackListInline());
+                        , new InputFile(itemDto.getImage()), inline.blockListInline(itemDto.getShop()));
 
             }
         } else {

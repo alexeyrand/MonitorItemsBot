@@ -27,6 +27,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.net.URI;
+import java.sql.SQLOutput;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,12 +84,13 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
+
             Message message = update.getMessage();
             Integer messageId = message.getMessageId();
             String chatId = message.getChatId().toString();
             String messageText = message.getText();
 
-            System.out.println("waitMessage: " + waitMessage);
+
             if (waitMessage) {
                 String[] parseUrl = messageText.split(" ");
                 if (parseUrl.length != 2 || parseUrl[1].charAt(6) != '/') {
@@ -119,7 +121,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "url4" -> SetUrl4CommandReceived(chatId);
                     default -> messageSender.sendMessage(chatId, "method not allowed");
                 }
-                System.out.println("Конец обработки сообщений");
+
+            }
+        } else if (update.hasCallbackQuery()) {
+            Message message = update.getCallbackQuery().getMessage();
+            Integer messageId = message.getMessageId();
+            String chatId = message.getChatId().toString();
+            String shop = update.getCallbackQuery().getData();
+
+            try {
+                requestSender.getAddBlockList(URI.create(config.getBlockEndPoint() + shop), chatId, messageId);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -153,7 +166,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void sendItem(String chatId, String textToSend, InputFile image) {
-        System.out.println("Зашел");
+
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(image);
@@ -169,21 +182,15 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     public void sendItemWithInLineBlock(String chatId, String textToSend, InputFile image, InlineKeyboardMarkup inline) {
-        System.out.println("Зашел");
         SendPhoto photo = new SendPhoto();
-        SendMessage ms = new SendMessage();
         photo.setChatId(chatId);
         photo.setPhoto(image);
         photo.setProtectContent(true);
         photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(textToSend);
-        ms.setReplyMarkup(inline);
+        photo.setReplyMarkup(inline);
         try {
-            System.out.println("Отправляю смс");
-            execute(ms);
-            System.out.println("отправляю фото");
             execute(photo);
-
             log.info("Message sent");
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());

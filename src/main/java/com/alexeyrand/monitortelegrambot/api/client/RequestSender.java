@@ -112,6 +112,28 @@ public class RequestSender {
 
 
     }
+    public void getAddBlockList(URI url, String chatId, Integer messageId) throws JsonProcessingException {
 
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.of(5, SECONDS))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .timeout(Duration.of(5, SECONDS))
+                .GET()
+                .build();
+        CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+
+        try {
+            if (responseFuture.get().statusCode() == 200) {
+                messageSender.deleteAdv(chatId, messageId, "Продавец заблокирован");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
 
 }
