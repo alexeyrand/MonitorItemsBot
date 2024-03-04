@@ -29,9 +29,10 @@ sudo java -jar
 ```
 ### **Deploy и CI/CD**
 ### **TODO**
-+ Create a black list of sellers
++ :white_check_mark: Create a black list of sellers
 + :white_check_mark: Fix NoSuchElementException for image
 + :white_check_mark: Fix Out of Memery Chrome driver
-+ Add Datebase H2
++ :white_check_mark: Add Datebase H2
 + Add autotest
++ Add 3-5 urls monitoring
   
