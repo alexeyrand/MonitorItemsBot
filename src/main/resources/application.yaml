@@ -11,6 +11,7 @@ monitor:
     start: http://localhost:9090/api/v1/start
     stop: http://localhost:9090/api/v1/stop
     url: http://localhost:9090/api/v1/urls
+    block: http://localhost:9090/api/v1/block/
 
 
 
