@@ -29,7 +29,7 @@ public class TelegramBotControllerTest {
     @Test
     void getItem() {
         // given
-        //MessageDto messageDto = dtoFactory.makeMessageDto("12", 12);
+        MessageDto messageDto = dtoFactory.makeMessageDto("12", 12);
 
         var responseEntity = this.controller.getStatus(messageDto, "status");
 
