@@ -1,12 +1,9 @@
 bot:
-  name: Forkov_bor
-  token: 6909314583:AAFHvyBZDHYUfz9K2tOn3fNDIAvIhAGcZrU
+  name: MonitorItemsBot
+  token: 5682349016:AAEgJjp4BR9EAghVLZ7dE8TYQ2lZPa3vMWI
 
 
 monitor:
-  urls:
-    file:
-      name: urls.txt
   endpoint:
     start: http://localhost:9090/api/v1/start
     stop: http://localhost:9090/api/v1/stop
@@ -19,4 +16,4 @@ monitor:
 
 answer:
   command:
-    help: "Привет, я телеграм бот для отслеживания товаров.\n\nМои команды: \n\\help\n/start\n/stop\n/settings\n/status"
+    help: "Привет, я телеграм бот для отслеживания товаров.\n\nМои команды: \n/help\n/start\n/status"

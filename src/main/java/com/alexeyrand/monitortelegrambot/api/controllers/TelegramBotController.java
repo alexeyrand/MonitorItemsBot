@@ -17,13 +17,13 @@ import java.util.Objects;
 public class TelegramBotController {
 
     private final MessageSender messageSender;
-    final TelegramBot telegramBot;
+    private final TelegramBot telegramBot;
     private final BlockListInline inline;
-    private static final String GET_ITEMS = "/items";
+    private static final String GET_ITEM = "/items";
     private static final String GET_STATUS = "/status";
 
-    @PostMapping(value = GET_ITEMS, consumes = {"application/json"})
-    public void getItems(@RequestBody ItemDto itemDto) {
+    @PostMapping(value = GET_ITEM, consumes = {"application/json"})
+    public void getItem(@RequestBody ItemDto itemDto) {
         String descriptionDTO = itemDto.getDescription();
         String description;
         try {
@@ -34,7 +34,7 @@ public class TelegramBotController {
 
         if (!Objects.equals(itemDto.getImage(), "")) {
             if(Objects.equals(itemDto.getShop(), "")) {
-                telegramBot.sendItem(itemDto.getChatId(),
+                messageSender.sendItem(itemDto.getChatId(),
                         "[" + itemDto.getName() + "]"
                                 + "(" + itemDto.getHref() + "/)"
                                 + "\nЦена: " + itemDto.getPrice() + " RUB"
@@ -59,7 +59,12 @@ public class TelegramBotController {
 
     @PostMapping(value = GET_STATUS, consumes = {"application/json"})
     public MessageDto getStatus(@RequestBody MessageDto messageDto, @RequestParam String status) {
-        messageSender.deleteMessage(messageDto.getChatId(), messageDto.getMessageId(), status);
+        if (status.equals("start")) {
+            messageSender.deleteMessage(messageDto.getChatId(), messageDto.getMessageId(), status);
+        } else if (status.equals("state")) {
+            messageSender.sendMessage(messageDto.getChatId(), "Монитор активен");
+        }
+
         return messageDto;
     }
 
