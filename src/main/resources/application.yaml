@@ -4,9 +4,6 @@ bot:
 
 
 monitor:
-  urls:
-    file:
-      name: urls.txt
   endpoint:
     start: http://localhost:9090/api/v1/start
     stop: http://localhost:9090/api/v1/stop
@@ -19,4 +16,4 @@ monitor:
 
 answer:
   command:
-    help: "Привет, я телеграм бот для отслеживания товаров.\n\nМои команды: \n\\help\n/start\n/stop\n/settings\n/status"
+    help: "Привет, я телеграм бот для отслеживания товаров.\n\nМои команды: \n/help\n/start\n/status"

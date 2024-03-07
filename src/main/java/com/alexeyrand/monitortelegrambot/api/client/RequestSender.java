@@ -1,15 +1,12 @@
 package com.alexeyrand.monitortelegrambot.api.client;
 
 import com.alexeyrand.monitortelegrambot.api.dto.MessageDto;
-import com.alexeyrand.monitortelegrambot.api.dto.UrlDto;
 import com.alexeyrand.monitortelegrambot.api.factories.MessageDtoFactory;
-import com.alexeyrand.monitortelegrambot.api.factories.UrlDtoFactory;
-import com.alexeyrand.monitortelegrambot.telegram.TelegramBot;
 import com.alexeyrand.monitortelegrambot.telegram.methods.MessageSender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
@@ -24,14 +21,13 @@ import java.util.concurrent.ExecutionException;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Component
+@RequiredArgsConstructor
 public class RequestSender {
 
-    @Autowired
-    private UrlDtoFactory urlDtoFactory;
-    @Autowired
-    private MessageDtoFactory messageDtoFactory;
-    @Autowired
-    private MessageSender messageSender;
+
+    private final MessageDtoFactory messageDtoFactory;
+
+    private final MessageSender messageSender;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -51,41 +47,15 @@ public class RequestSender {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonMessageDto))
                 .build();
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-
+        messageSender.sendMessage(chatId, "Монитор запускается ...\nЭто займет несколько секунд");
         try {
             if (responseFuture.get().statusCode() == 200) {
-                messageSender.sendMessage(chatId, "Монитор запускается ...\nЭто займет несколько секунд");
+                Thread.sleep(1750);
+                messageSender.deleteMessage(chatId, messageId,"Монитор запустился");
 
             }
         } catch (ExecutionException | InterruptedException e) {
             System.out.println(e.getMessage());
-            //throw new RuntimeException(e);
-        }
-    }
-
-    public void postUrlRequest(URI url, String chatId, Integer messageId, String nameUrl, String hrefUrl) throws JsonProcessingException {
-        UrlDto urlDto = urlDtoFactory.makeUrlDto(nameUrl, hrefUrl);
-        String jsonUrlDto = mapper.writeValueAsString(urlDto);
-        System.out.println(jsonUrlDto);
-
-        HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.of(5, SECONDS))
-                .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
-                .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                .timeout(Duration.of(5, SECONDS))
-                .POST(HttpRequest.BodyPublishers.ofString(jsonUrlDto))
-                .build();
-
-        CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-        try {
-            if (responseFuture.get().statusCode() == 200) {
-                messageSender.sendMessage(chatId, "Новый Url установлен");
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 

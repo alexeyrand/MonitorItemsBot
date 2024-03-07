@@ -34,9 +34,4 @@ public class BotConfig {
     @Value("${monitor.endpoint.block}")
     private String blockEndPoint;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////// ulr
-
-    @Value("${monitor.urls.file.name}")
-    private String urlsFileName;
-
 }

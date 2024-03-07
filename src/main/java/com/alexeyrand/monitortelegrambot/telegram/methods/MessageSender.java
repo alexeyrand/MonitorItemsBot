@@ -23,15 +23,9 @@ public class MessageSender {
     @Autowired
     private TelegramBot telegramBot;
 
-    @Getter
-    @Setter
-    private String urlKey = new String();
-
     boolean waitMessage = false;
 
-    public void sendMessageWait(String chatId, String textToSend, String url) {
-        setUrlKey("" + url);
-        System.out.println(getUrlKey());
+    public void sendMessageWait(String chatId, String textToSend) {
         sendMessage(chatId, textToSend);
         waitMessage = true;
     }
@@ -40,7 +34,6 @@ public class MessageSender {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(textToSend);
-        System.out.println(textToSend);
         try {
             telegramBot.execute(message);
             log.info("Message sent");
@@ -61,25 +54,26 @@ public class MessageSender {
         }
     }
 
-    public void deleteMessage(String chatId, Integer messageId, String status) {
+    public void deleteMessage(String chatId, Integer messageId, String textToSend) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId + 1);
         SendMessage message = new SendMessage();
+        message.setText(textToSend);
         message.setChatId(chatId);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            Thread.sleep(2000);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         try {
             telegramBot.execute(deleteMessage);
-            if (status.equals("start")) {
+//            if (status.equals("start")) {
                 sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop.");
-            }
-            if (status.equals("stop")) {
-                sendMessage(chatId, "Монитор остановлен");
-            }
+//            }
+//            if (status.equals("stop")) {
+//                sendMessage(chatId, "Монитор остановлен");
+//            }
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
@@ -99,8 +93,6 @@ public class MessageSender {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }
     }
-
-
 
     public void deleteAdv(String chatId, Integer messageId, String answer) {
         DeleteMessage deleteMessage = new DeleteMessage();
