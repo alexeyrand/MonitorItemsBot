@@ -56,6 +56,7 @@ public class EventHandler {
 
     public void StatusCommandReceived(String chatId) {
         String answer = "Монитор активен.";
+        System.out.println(MessageSender.class.getName());
         ReplyKeyboardMarkup keyboard = HomeKeyboard.setKeyboard();
         messageSender.sendMessageWithKeyboard(chatId, answer, keyboard);
         log.info("Setting button 'status'");

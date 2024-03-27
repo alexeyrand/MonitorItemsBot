@@ -61,19 +61,10 @@ public class MessageSender {
         SendMessage message = new SendMessage();
         message.setText(textToSend);
         message.setChatId(chatId);
-//        try {
-//            Thread.sleep(2000);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
         try {
             telegramBot.execute(deleteMessage);
-//            if (status.equals("start")) {
-                sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop.");
-//            }
-//            if (status.equals("stop")) {
-//                sendMessage(chatId, "Монитор остановлен");
-//            }
+            sendMessage(chatId, "Монитор активирован. Для остановки - нажмите stop.");
+
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage() + "/// in class: " + this.getClass().getName());
         }

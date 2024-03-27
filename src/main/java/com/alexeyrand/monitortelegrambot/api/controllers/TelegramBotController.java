@@ -22,6 +22,7 @@ public class TelegramBotController {
     private static final String GET_ITEM = "/items";
     private static final String GET_STATUS = "/status";
 
+
     @PostMapping(value = GET_ITEM, consumes = {"application/json"})
     public void getItem(@RequestBody ItemDto itemDto) {
         String descriptionDTO = itemDto.getDescription();
@@ -31,10 +32,9 @@ public class TelegramBotController {
         } catch (StringIndexOutOfBoundsException SIOBE) {
             description = descriptionDTO;
         }
-
         if (!Objects.equals(itemDto.getImage(), "")) {
             if(Objects.equals(itemDto.getShop(), "")) {
-                messageSender.sendItem(itemDto.getChatId(),
+                telegramBot.sendItem(itemDto.getChatId(),
                         "[" + itemDto.getName() + "]"
                                 + "(" + itemDto.getHref() + "/)"
                                 + "\nЦена: " + itemDto.getPrice() + " RUB"
@@ -47,9 +47,9 @@ public class TelegramBotController {
                                 + "\nЦена: " + itemDto.getPrice() + " RUB"
                                 + "\n" + description
                         , new InputFile(itemDto.getImage()), inline.blockListInline(itemDto.getShop()));
-
             }
         } else {
+            System.out.println(4);
             messageSender.sendMessage(itemDto.getChatId(), "[" + itemDto.getName() + "]"
                     + "(" + itemDto.getHref() + "/)"
                     + "\nЦена " + itemDto.getPrice() + " RUB"
