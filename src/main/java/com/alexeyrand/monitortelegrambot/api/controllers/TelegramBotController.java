@@ -49,7 +49,6 @@ public class TelegramBotController {
                         , new InputFile(itemDto.getImage()), inline.blockListInline(itemDto.getShop()));
             }
         } else {
-            System.out.println(4);
             messageSender.sendMessage(itemDto.getChatId(), "[" + itemDto.getName() + "]"
                     + "(" + itemDto.getHref() + "/)"
                     + "\nЦена " + itemDto.getPrice() + " RUB"
